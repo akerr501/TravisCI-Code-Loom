@@ -16,8 +16,7 @@ install:
   - unzip ./Loom_Auxiliary/Dependencies/All_Dependencies.zip -d /usr/local/share/arduino/libraries
   - cd /usr/local/share/arduino/libraries
   - git clone https://github.com/OPEnSLab-OSU/Loom.git
-  - ln -s $PWD /usr/local/share/arduino/libraries/Loom
-  - ln -s $PWD /usr/local/share/arduino/libraries
+  - ln -s $PWD /usr/local/share/arduino/libraries/*
 script:
   - arduino --verify --board arduino:avr:uno $PWD/Actuators/Relay/Relay.ino
   - travis_wait 30 arduino --verify --board arduino:avr:uno $PWD/Basic/Basic.ino
