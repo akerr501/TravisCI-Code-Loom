@@ -138,7 +138,7 @@ script:
   - arduino-cli compile --warnings all --fqbn $BOARD $PWD/examples/'Communication Platforms'/LoRa/Receive
   - arduino-cli compile --warnings all --fqbn $BOARD $PWD/examples/'Communication Platforms'/LoRa/Receive_Blocking
   - arduino-cli compile --warnings all --fqbn $BOARD $PWD/examples/'Communication Platforms'/LoRa/Transmit
-  # - arduino-cli compile --warnings all --fqbn $BOARD $PWD/examples/'Communication Platforms'/nRF/Receive
+  - arduino-cli compile --warnings all --fqbn $BOARD $PWD/examples/'Communication Platforms'/nRF/Receive
   # - arduino-cli compile --warnings all --fqbn $BOARD $PWD/examples/'Communication Platforms'/nRF/Transmit
   # - arduino-cli compile --warnings all --fqbn $BOARD $PWD/examples/Configuration/ConfigOverSerial
   # - arduino-cli compile --warnings all --fqbn $BOARD $PWD/examples/Configuration/Default_Parameters
