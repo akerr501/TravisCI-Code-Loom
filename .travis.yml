@@ -46,15 +46,15 @@ jobs:
         - cp "$(find /tmp/ -maxdepth 1 -type d -name "arduino-sketch*" -print | head -n 1)/libraries/Basic/Basic.a" tmp-bin/cortex-m0plus/Basic.a
         - rm -rf /tmp/arduino-sketch*
         #Precompiles third sketch
-        - arduino-cli compile --fqbn arduino:samd:mzero_bl $PWD/examples/'Communications Platforms'/LoRa/Receive
+        - arduino-cli compile --fqbn arduino:samd:mzero_bl $PWD/examples/'Communication Platforms'/LoRa/Receive
         - cp "$(find /tmp/ -maxdepth 1 -type d -name "arduino-sketch*" -print | head -n 1)/libraries/Receive/Receive.a" tmp-bin/cortex-m0plus/Receive.a
         - rm -rf /tmp/arduino-sketch*
         #Precompiles fourth sketch
-        - arduino-cli compile --fqbn arduino:samd:mzero_bl $PWD/examples/'Communications Platforms'/LoRa/Receive_Blocking
+        - arduino-cli compile --fqbn arduino:samd:mzero_bl $PWD/examples/'Communication Platforms'/LoRa/Receive_Blocking
         - cp "$(find /tmp/ -maxdepth 1 -type d -name "arduino-sketch*" -print | head -n 1)/libraries/Receive_Blocking/Receive_Blocking.a" tmp-bin/cortex-m0plus/Receive_Blocking.a
         - rm -rf /tmp/arduino-sketch*
         #Precompiles fifth sketch
-        - arduino-cli compile --fqbn arduino:samd:mzero_bl $PWD/examples/'Communications Platforms'/LoRa/Transmit
+        - arduino-cli compile --fqbn arduino:samd:mzero_bl $PWD/examples/'Communication Platforms'/LoRa/Transmit
         - cp "$(find /tmp/ -maxdepth 1 -type d -name "arduino-sketch*" -print | head -n 1)/libraries/Transmit/Transmit.a" tmp-bin/cortex-m0plus/Transmit.a
         - rm -rf /tmp/arduino-sketch*
         #Bundles precompiles up
@@ -135,11 +135,11 @@ install:
 script:
   - arduino-cli compile --warnings all --fqbn $BOARD $PWD/examples/Actuators/Relay
   - arduino-cli compile --warnings all --fqbn $BOARD $PWD/examples/Basic
-  - arduino-cli compile --warnings all --fqbn $BOARD $PWD/examples/'Communications Platforms'/LoRa/Receive
-  - arduino-cli compile --warnings all --fqbn $BOARD $PWD/examples/'Communications Platforms'/LoRa/Receive_Blocking
-  - arduino-cli compile --warnings all --fqbn $BOARD $PWD/examples/'Communications Platforms'/LoRa/Transmit
-  # - arduino-cli compile --warnings all --fqbn $BOARD $PWD/examples/'Communications Platforms'/nRF/Receive
-  # - arduino-cli compile --warnings all --fqbn $BOARD $PWD/examples/'Communications Platforms'/nRF/Transmit
+  - arduino-cli compile --warnings all --fqbn $BOARD $PWD/examples/'Communication Platforms'/LoRa/Receive
+  - arduino-cli compile --warnings all --fqbn $BOARD $PWD/examples/'Communication Platforms'/LoRa/Receive_Blocking
+  - arduino-cli compile --warnings all --fqbn $BOARD $PWD/examples/'Communication Platforms'/LoRa/Transmit
+  # - arduino-cli compile --warnings all --fqbn $BOARD $PWD/examples/'Communication Platforms'/nRF/Receive
+  # - arduino-cli compile --warnings all --fqbn $BOARD $PWD/examples/'Communication Platforms'/nRF/Transmit
   # - arduino-cli compile --warnings all --fqbn $BOARD $PWD/examples/Configuration/ConfigOverSerial
   # - arduino-cli compile --warnings all --fqbn $BOARD $PWD/examples/Configuration/Default_Parameters
   # - arduino-cli compile --warnings all --fqbn $BOARD $PWD/examples/Configuration/JsonConfig
