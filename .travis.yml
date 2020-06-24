@@ -1,37 +1,170 @@
+#Based on work by Noah Koontz
+
 language: c
 env:
-  - TRAVIS_DEBUG_MODE=true
-before_install:
-  - sudo apt-get update
-  - sudo apt install unzip
-  - "/sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_1.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :1 -ac -screen 0 1280x1024x16"
-  - sleep 3
-  - export DISPLAY=:1.0
-  - wget http://downloads.arduino.cc/arduino-1.6.5-linux64.tar.xz
-  - tar xf arduino-1.6.5-linux64.tar.xz
-  - sudo mv arduino-1.6.5 /usr/local/share/arduino
-  - sudo ln -s /usr/local/share/arduino/arduino /usr/local/bin/arduino
-install:
-  - git clone https://github.com/OPEnSLab-OSU/Loom_Auxiliary.git
-  - unzip ./Loom_Auxiliary/Dependencies/All_Dependencies.zip -d /usr/local/share/arduino/libraries
-  - cd /usr/local/share/arduino/libraries
-  - git clone https://github.com/OPEnSLab-OSU/Loom.git
-  - ln -s $PWD /usr/local/share/arduino/libraries/Loom
-  - ln -d $PWD /usr/local/share/arduino/libraries/All_Dependencies/*
-script:
-  - arduino --verify --board arduino:avr:uno $PWD/Actuators/Relay/Relay.ino
-  - travis_wait 30 arduino --verify --board arduino:avr:uno $PWD/Basic/Basic.ino
-  - travis_wait 30 arduino --verify --board arduino:avr:uno $PWD/"Communication Platforms"/LoRa/Receive/Receive.ino
-  - travis_wait 30 arduino --verify --board arduino:avr:uno $PWD/"Communication Platforms"/LoRa/Receive_Blocking/Receive_Blocking.ino
-  - travis_wait 30 arduino --verify --board arduino:avr:uno $PWD/"Communication Platforms"/LoRa/Transmit/Transmit.ino
-  - travis_wait 30 arduino --verify --board arduino:avr:uno $PWD/"Communication Platforms"/nRF/Receive/Receive.ino
-  - travis_wait 30 arduino --verify --board arduino:avr:uno $PWD/"Communication Platforms"/nRF/Transmit/Transmit.ino
-  - travis_wait 30 arduino --verify --board arduino:avr:uno $PWD/Configuration/ConfigOverSerial/ConfigOverSerial.ino
-  - travis_wait 30 arduino --verify --board arduino:avr:uno $PWD/Configuration/Default_Parameters/Default_Parameters.ino
+  global:
+    - ADDITIONAL_URLS="https://adafruit.github.io/arduino-board-index/package_adafruit_index.json,https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json,https://github.com/stm32duino/BoardManagerFiles/raw/master/STM32/package_stm_index.json"
+    - DOXYFILE=$TRAVIS_BUILD_DIR/.travis/Doxyfile
 
-notifications:
-  email:
-    recipients:
-      - kerrada@oregonstate.edu
-    on_success: always
-    on_failure: always
+cache:
+    directories:
+      - ~/arduino_ide
+      - ~/.arduino15/packages/
+
+branches:
+  except:
+    - gh-pages
+
+
+addons:
+  apt:
+    packages:
+      - doxygen
+
+jobs:
+  include:
+    - stage: "Build"
+      name: "Feather M0"
+      env: CORE="adafruit:samd" BOARD="adafruit:samd:adafruit_feather_m0"
+
+    - stage: "Deploy"
+      if: tag is present
+      env: CORE="arduino:samd"
+      script: skip
+      before_deploy:
+        - mkdir tmp-bin
+        - cp library.properties library.properties.old
+        - echo "dot_a_linkage=true" >> library.properties
+        - rm -rf /tmp/arduino-sketch*
+        #Precompiles first sketch
+        - arduino-cli compile --fqbn arduino:samd:mzero_bl $PWD/examples/Actuators/Relay
+        - mkdir tmp-bin/cortex-m0plus
+        - cp "$(find /tmp/ -maxdepth 1 -type d -name "arduino-sketch*" -print | head -n 1)/libraries/Relay/Relay.a" tmp-bin/cortex-m0plus/Relay.a
+        - rm -rf /tmp/arduino-sketch*
+        #Precompiles second sketch
+        - arduino-cli compile --fqbn arduino:samd:mzero_bl $PWD/examples/Basic
+        - cp "$(find /tmp/ -maxdepth 1 -type d -name "arduino-sketch*" -print | head -n 1)/libraries/Basic/Basic.a" tmp-bin/cortex-m0plus/Basic.a
+        - rm -rf /tmp/arduino-sketch*
+        #Precompiles third sketch
+        - arduino-cli compile --fqbn arduino:samd:mzero_bl $PWD/examples/'Communications Platforms'/LoRa/Receive
+        - cp "$(find /tmp/ -maxdepth 1 -type d -name "arduino-sketch*" -print | head -n 1)/libraries/Receive/Receive.a" tmp-bin/cortex-m0plus/Receive.a
+        - rm -rf /tmp/arduino-sketch*
+        #Precompiles fourth sketch
+        - arduino-cli compile --fqbn arduino:samd:mzero_bl $PWD/examples/'Communications Platforms'/LoRa/Receive_Blocking
+        - cp "$(find /tmp/ -maxdepth 1 -type d -name "arduino-sketch*" -print | head -n 1)/libraries/Receive_Blocking/Receive_Blocking.a" tmp-bin/cortex-m0plus/Receive_Blocking.a
+        - rm -rf /tmp/arduino-sketch*
+        #Precompiles fifth sketch
+        - arduino-cli compile --fqbn arduino:samd:mzero_bl $PWD/examples/'Communications Platforms'/LoRa/Transmit
+        - cp "$(find /tmp/ -maxdepth 1 -type d -name "arduino-sketch*" -print | head -n 1)/libraries/Transmit/Transmit.a" tmp-bin/cortex-m0plus/Transmit.a
+        - rm -rf /tmp/arduino-sketch*
+        #Bundles precompiles up
+        - mv library.properties.old library.properties
+        - echo "precompiled=true" >> library.properties
+        - mv tmp-bin/* src/
+        - rm -rf tmp-bin
+        - rm -rf .git
+        - find src/ -iname "*.c" -delete
+        - find src/ -iname "*.cpp" -delete
+        - zip -r LTE-Hypnos-Example-precompiled.zip .
+      deploy:
+        provider: releases
+        api_key: $GITHUB_TOKEN
+        skip_cleanup: true
+        file: "LTE-Hypnos-Example-precompiled.zip"
+        on:
+          tags: true
+
+
+install:
+  - curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | BINDIR=/usr/bin sudo sh
+  - arduino-cli core update-index --additional-urls $ADDITIONAL_URLS
+  - arduino-cli core install arduino:samd -v
+  - arduino-cli core install $CORE -v --additional-urls $ADDITIONAL_URLS
+  - mkdir -p $HOME/Arduino/libraries
+  - rm -rf $HOME/Arduino/libraries/Adafruit_ADS1X15
+  - rm -rf $HOME/Arduino/libraries/Adafruit_BluefruitLE_nRF51
+  - rm -rf $HOME/Arduino/libraries/Adafruit_FXAS21002C
+  - rm -rf $HOME/Arduino/libraries/Adafruit_FXOS8700
+  - rm -rf $HOME/Arduino/libraries/Adafruit_GFX_Library
+  - rm -rf $HOME/Arduino/libraries/Adafruit_MAX31855_library
+  - rm -rf $HOME/Arduino/libraries/Adafruit_MAX31856_library
+  - rm -rf $HOME/Arduino/libraries/Adafruit_MMA8451_Library
+  - rm -rf $HOME/Arduino/libraries/Adafruit_Motor_Shield_V2_Library
+  - rm -rf $HOME/Arduino/libraries/Adafruit_NeoPixel
+  - rm -rf $HOME/Arduino/libraries/Adafruit_PWM_Servo_Driver_Library
+  - rm -rf $HOME/Arduino/libraries/Adafruit_Seesaw-master
+  - rm -rf $HOME/Arduino/libraries/Adafruit_SHT31_Library
+  - rm -rf $HOME/Arduino/libraries/Adafruit_SleepyDog_Library
+  - rm -rf $HOME/Arduino/libraries/Adafruit_SSD1306
+  - rm -rf $HOME/Arduino/libraries/Adafruit_TMP007_Library
+  - rm -rf $HOME/Arduino/libraries/Adafruit_TSL2561
+  - rm -rf $HOME/Arduino/libraries/Adafruit_TSL2591_Library
+  - rm -rf $HOME/Arduino/libraries/Adafruit_Unified_Sensor
+  - rm -rf $HOME/Arduino/libraries/Adafruit_VC0706_Serial_Camera_Library
+  - rm -rf $HOME/Arduino/libraries/ArduinoHttpClient
+  - rm -rf $HOME/Arduino/libraries/ArduinoJson
+  - rm -rf $HOME/Arduino/libraries/AsyncDelay
+  - rm -rf $HOME/Arduino/libraries/EnableInterrupt
+  - rm -rf $HOME/Arduino/libraries/Ethernet2-master
+  - rm -rf $HOME/Arduino/libraries/EthernetLarge-master
+  - rm -rf $HOME/Arduino/libraries/FlashStorage
+  - rm -rf $HOME/Arduino/libraries/Low-Power
+  - rm -rf $HOME/Arduino/libraries/MPU6050_tockn
+  - rm -rf $HOME/Arduino/libraries/MS5803_02
+  - rm -rf $HOME/Arduino/libraries/OPEnS_RTC-master
+  - rm -rf $HOME/Arduino/libraries/RadioHead
+  - rm -rf $HOME/Arduino/libraries/RF24
+  - rm -rf $HOME/Arduino/libraries/RF24Network
+  - rm -rf $HOME/Arduino/libraries/RTCCounter
+  - rm -rf $HOME/Arduino/libraries/SdFat
+  - rm -rf $HOME/Arduino/libraries/SparkFun_AS726X
+  - rm -rf $HOME/Arduino/libraries/SparkFun_LIS3DH_Breakout
+  - rm -rf $HOME/Arduino/libraries/SparkFun_Spectral_Triad_AS7265X
+  - rm -rf $HOME/Arduino/libraries/SSLClient-master
+  - rm -rf $HOME/Arduino/libraries/TinyGSM-master
+  - rm -rf $HOME/Arduino/libraries/TSL2561-Arduino-Library-master
+  - rm -rf $HOME/Arduino/libraries/WiFi101
+  - rm -rf $HOME/Arduino/libraries/ZX_Distance
+  - rm -rf $HOME/Arduino/libraries/Loom
+  - git clone https://github.com/OPEnSLab-OSU/Loom_Auxiliary.git
+  - unzip ./Loom_Auxiliary/Dependencies/All_Dependencies.zip -d ./Loom_Auxiliary
+  - cp -a ./Loom_Auxiliary/All_Dependencies/. $HOME/Arduino/libraries/
+  - git clone https://github.com/OPEnSLab-OSU/Loom.git $HOME/Arduino/libraries/Loom
+  - ln -s $PWD $HOME/Arduino/libraries/.
+
+script:
+  - arduino-cli compile --warnings all --fqbn $BOARD $PWD/examples/Actuators/Relay
+  - arduino-cli compile --warnings all --fqbn $BOARD $PWD/examples/Basic
+  - arduino-cli compile --warnings all --fqbn $BOARD $PWD/examples/'Communications Platforms'/LoRa/Receive
+  - arduino-cli compile --warnings all --fqbn $BOARD $PWD/examples/'Communications Platforms'/LoRa/Receive_Blocking
+  - arduino-cli compile --warnings all --fqbn $BOARD $PWD/examples/'Communications Platforms'/LoRa/Transmit
+  - arduino-cli compile --warnings all --fqbn $BOARD $PWD/examples/'Communications Platforms'/nRF/Receive
+  - arduino-cli compile --warnings all --fqbn $BOARD $PWD/examples/'Communications Platforms'/nRF/Transmit
+  - arduino-cli compile --warnings all --fqbn $BOARD $PWD/examples/Configuration/ConfigOverSerial
+  - arduino-cli compile --warnings all --fqbn $BOARD $PWD/examples/Configuration/Default_Parameters
+  - arduino-cli compile --warnings all --fqbn $BOARD $PWD/examples/Configuration/JsonConfig
+  - arduino-cli compile --warnings all --fqbn $BOARD $PWD/examples/Configuration/LoadConfigSD
+  - arduino-cli compile --warnings all --fqbn $BOARD $PWD/examples/ExtractValueFromJson
+  - arduino-cli compile --warnings all --fqbn $BOARD $PWD/examples/InternalTimers
+  - arduino-cli compile --warnings all --fqbn $BOARD $PWD/examples/'Lab Examples'/AGU/Base
+  - arduino-cli compile --warnings all --fqbn $BOARD $PWD/examples/'Lab Examples'/Hypnos_SD
+  - arduino-cli compile --warnings all --fqbn $BOARD $PWD/examples/'Lab Examples'/Hypnos_SD_Sleep
+  - arduino-cli compile --warnings all --fqbn $BOARD $PWD/examples/'Lab Examples'/Ishield
+  - arduino-cli compile --warnings all --fqbn $BOARD $PWD/examples/'Lab Examples'/SmartRockLoomSimple
+  - arduino-cli compile --warnings all --fqbn $BOARD $PWD/examples/'Lab Examples'/Stroud/StroudNode
+  - arduino-cli compile --warnings all --fqbn $BOARD $PWD/examples/'Logging Platforms'/OLED
+  - arduino-cli compile --warnings all --fqbn $BOARD $PWD/examples/'Logging Platforms'/SD
+  - arduino-cli compile --warnings all --fqbn $BOARD $PWD/examples/MaxMsp/SimpleMax
+  - arduino-cli compile --warnings all --fqbn $BOARD $PWD/examples/'Publishing Platforms'/GoogleSheetsEthernet
+  - arduino-cli compile --warnings all --fqbn $BOARD $PWD/examples/'Publishing Platforms'/GoogleSheetsLTE
+  - arduino-cli compile --warnings all --fqbn $BOARD $PWD/examples/'Publishing Platforms'/GoogleSheetsRTC
+  - arduino-cli compile --warnings all --fqbn $BOARD $PWD/examples/'Publishing Platforms'/GoogleSheetsWifi
+  - arduino-cli compile --warnings all --fqbn $BOARD $PWD/examples/RTC/BasicRepeatingRTC_DS3231
+  - arduino-cli compile --warnings all --fqbn $BOARD $PWD/examples/RTC/BasicRepeatingRTC_PCF8523
+  - arduino-cli compile --warnings all --fqbn $BOARD $PWD/examples/Sensors/ADS1115
+  - arduino-cli compile --warnings all --fqbn $BOARD $PWD/examples/Sensors/MMA8451
+  - arduino-cli compile --warnings all --fqbn $BOARD $PWD/examples/Sensors/MPU6050
+  - arduino-cli compile --warnings all --fqbn $BOARD $PWD/examples/Sensors/Multiplexer
+  - arduino-cli compile --warnings all --fqbn $BOARD $PWD/examples/Sleep/Sleep
+  - arduino-cli compile --warnings all --fqbn $BOARD $PWD/examples/WifiFirmwareUpdater
+  - arduino-cli compile --warnings all --fqbn $BOARD $PWD/examples/WithoutLoomManager
