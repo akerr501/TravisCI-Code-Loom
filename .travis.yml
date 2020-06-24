@@ -72,6 +72,7 @@ install:
   - ln -s $PWD $HOME/Arduino/libraries/.
 
 script:
+  #Compiling all lab examples
   - arduino-cli compile --fqbn $BOARD $PWD/examples/Basic
   - arduino-cli compile --fqbn $BOARD $PWD/examples/Actuators/Relay
   - arduino-cli compile --fqbn $BOARD $PWD/examples/'Communication Platforms'/LoRa/Receive
@@ -97,13 +98,13 @@ script:
   - arduino-cli compile --fqbn $BOARD $PWD/examples/'Publishing Platforms'/GoogleSheetsEthernet
   - arduino-cli compile --fqbn $BOARD $PWD/examples/'Publishing Platforms'/GoogleSheetsLTE
   - arduino-cli compile --fqbn $BOARD $PWD/examples/'Publishing Platforms'/GoogleSheetsRTC
-  - arduino-cli compile --fqbn $BOARD $PWD/examples/'Publishing Platforms'/GoogleSheetsWifi
+  - arduino-cli compile --fqbn $BOARD $PWD/examples/'Publishing Platforms'/GoogleSheetsWiFi
   - arduino-cli compile --fqbn $BOARD $PWD/examples/RTC/BasicRepeatingRTC_DS3231
   - arduino-cli compile --fqbn $BOARD $PWD/examples/RTC/BasicRepeatingRTC_PCF8523
   - arduino-cli compile --fqbn $BOARD $PWD/examples/Sensors/ADS1115
+  - arduino-cli compile --fqbn $BOARD $PWD/examples/Sensors/K30
   - arduino-cli compile --fqbn $BOARD $PWD/examples/Sensors/MMA8451
   - arduino-cli compile --fqbn $BOARD $PWD/examples/Sensors/MPU6050
   - arduino-cli compile --fqbn $BOARD $PWD/examples/Sensors/Multiplexer
   - arduino-cli compile --fqbn $BOARD $PWD/examples/Sleep/Sleep
-  - arduino-cli compile --fqbn $BOARD $PWD/examples/WifiFirmwareUpdater
-  - arduino-cli compile --fqbn $BOARD $PWD/examples/WithoutLoomManager
+  - arduino-cli compile --fqbn $BOARD $PWD/examples/WiFiFirmwareUpdater

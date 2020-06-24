@@ -16,7 +16,7 @@
 #include <Loom.h>
 
 // Include configuration
-const char* json_config =
+const char* json_config = 
 #include "config.h"
 ;
 
@@ -39,11 +39,11 @@ void wakeISR_RTC() {
 	rtc_flag = true;
 }
 
-void setup()
+void setup() 
 {
 	// Needs to be done for Hypno Board
-	pinMode(5, OUTPUT);		// Enable control of 3.3V rail
-	pinMode(6, OUTPUT);		// Enable control of 5V rail
+	pinMode(5, OUTPUT);		// Enable control of 3.3V rail 
+	pinMode(6, OUTPUT);		// Enable control of 5V rail 
 	pinMode(12, INPUT_PULLUP);		// Enable waiting for RTC interrupt, MUST use a pullup since signal is active low
   pinMode(13, OUTPUT);
 
@@ -64,10 +64,10 @@ void setup()
 }
 
 
-void loop()
+void loop() 
 {
-	digitalWrite(5, LOW); // Enable 3.3V rail
-  digitalWrite(6, HIGH);  // Enable 5V rail
+	digitalWrite(5, LOW); // Disable 3.3V rail
+  digitalWrite(6, HIGH);  // Disable 5V rail
   digitalWrite(13, HIGH);
 
 	// As it turns out, if the SD card is initialized and you change
@@ -95,8 +95,8 @@ void loop()
 	Loom.InterruptManager().reconnect_interrupt(12);
 
   digitalWrite(13, LOW);
-	digitalWrite(5, HIGH); // Disable 3.3V rail
-	digitalWrite(6, LOW);  // Disable 5V rail
+	digitalWrite(5, HIGH); // Enable 3.3V rail
+	digitalWrite(6, LOW);  // Enable 5V rail
 	pinMode(23, INPUT);
 	pinMode(24, INPUT);
 	pinMode(10, INPUT);
