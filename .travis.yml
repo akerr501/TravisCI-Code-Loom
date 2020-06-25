@@ -5,6 +5,7 @@ env:
   global:
     - ADDITIONAL_URLS="https://adafruit.github.io/arduino-board-index/package_adafruit_index.json,https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json,https://github.com/stm32duino/BoardManagerFiles/raw/master/STM32/package_stm_index.json"
     - DOXYFILE=$TRAVIS_BUILD_DIR/.travis/Doxyfile
+    - CORE="adafruit:samd" BOARD="adafruit:samd:adafruit_feather_m0"
 
 cache:
     directories:
@@ -21,42 +22,42 @@ addons:
     packages:
       - doxygen
 
-jobs:
-  include:
-    - stage: "Build"
-      name: "Feather M0"
-      env: CORE="adafruit:samd" BOARD="adafruit:samd:adafruit_feather_m0"
-
-    - stage: "Deploy"
-      if: tag is present
-      env: CORE="arduino:samd"
-      script: skip
-      before_deploy:
-        - mkdir tmp-bin
-        - cp library.properties library.properties.old
-        - echo "dot_a_linkage=true" >> library.properties
-        - rm -rf /tmp/arduino-sketch*
-        #Precompiles
-        - arduino-cli compile --fqbn arduino:samd:mzero_bl $PWD/examples/Basic
-        - mkdir tmp-bin/cortex-m0plus
-        - cp "$(find /tmp/ -maxdepth 1 -type d -name "arduino-sketch*" -print | head -n 1)/libraries/Basic/Basic.a" tmp-bin/cortex-m0plus/Basic.a
-        - rm -rf /tmp/arduino-sketch*
-        #Bundles precompiles up
-        - mv library.properties.old library.properties
-        - echo "precompiled=true" >> library.properties
-        - mv tmp-bin/* src/
-        - rm -rf tmp-bin
-        - rm -rf .git
-        - find src/ -iname "*.c" -delete
-        - find src/ -iname "*.cpp" -delete
-        - zip -r LTE-Hypnos-Example-precompiled.zip .
-      deploy:
-        provider: releases
-        api_key: $GITHUB_TOKEN
-        skip_cleanup: true
-        file: "LTE-Hypnos-Example-precompiled.zip"
-        on:
-          tags: true
+# jobs:
+#   include:
+#     - stage: "Build"
+#       name: "Feather M0"
+#
+#
+#     - stage: "Deploy"
+#       if: tag is present
+#       env: CORE="arduino:samd"
+#       script: skip
+#       before_deploy:
+#         - mkdir tmp-bin
+#         - cp library.properties library.properties.old
+#         - echo "dot_a_linkage=true" >> library.properties
+#         - rm -rf /tmp/arduino-sketch*
+#         #Precompiles
+#         - arduino-cli compile --fqbn arduino:samd:mzero_bl $PWD/examples/Basic
+#         - mkdir tmp-bin/cortex-m0plus
+#         - cp "$(find /tmp/ -maxdepth 1 -type d -name "arduino-sketch*" -print | head -n 1)/libraries/Basic/Basic.a" tmp-bin/cortex-m0plus/Basic.a
+#         - rm -rf /tmp/arduino-sketch*
+#         #Bundles precompiles up
+#         - mv library.properties.old library.properties
+#         - echo "precompiled=true" >> library.properties
+#         - mv tmp-bin/* src/
+#         - rm -rf tmp-bin
+#         - rm -rf .git
+#         - find src/ -iname "*.c" -delete
+#         - find src/ -iname "*.cpp" -delete
+#         - zip -r LTE-Hypnos-Example-precompiled.zip .
+#       deploy:
+#         provider: releases
+#         api_key: $GITHUB_TOKEN
+#         skip_cleanup: true
+#         file: "LTE-Hypnos-Example-precompiled.zip"
+#         on:
+#           tags: true
 
 
 install:
