@@ -22,6 +22,19 @@ addons:
     packages:
       - doxygen
 
+install:
+  - curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | BINDIR=/usr/bin sudo sh
+  - arduino-cli core update-index --additional-urls $ADDITIONAL_URLS
+  - arduino-cli core install arduino:samd -v
+  - arduino-cli core install $CORE -v --additional-urls $ADDITIONAL_URLS
+  - mkdir -p $HOME/Arduino/libraries
+  - git clone https://github.com/OPEnSLab-OSU/Loom_Auxiliary.git
+  - unzip ./Loom_Auxiliary/Dependencies/All_Dependencies.zip -d ./Loom_Auxiliary
+  - cp -a ./Loom_Auxiliary/All_Dependencies/. $HOME/Arduino/libraries/
+  - git clone https://github.com/OPEnSLab-OSU/Loom.git $HOME/Arduino/libraries/Loom
+  - ln -s $PWD $HOME/Arduino/libraries/.
+
+
 jobs:
   include:
     - stage: "Build"
@@ -59,53 +72,79 @@ jobs:
         on:
           tags: true
 
+    - stage: "Actuators"
+      script:
+        - arduino-cli compile --fqbn $BOARD $PWD/examples/Actuators/Relay
 
-install:
-  - curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | BINDIR=/usr/bin sudo sh
-  - arduino-cli core update-index --additional-urls $ADDITIONAL_URLS
-  - arduino-cli core install arduino:samd -v
-  - arduino-cli core install $CORE -v --additional-urls $ADDITIONAL_URLS
-  - mkdir -p $HOME/Arduino/libraries
-  - git clone https://github.com/OPEnSLab-OSU/Loom_Auxiliary.git
-  - unzip ./Loom_Auxiliary/Dependencies/All_Dependencies.zip -d ./Loom_Auxiliary
-  - cp -a ./Loom_Auxiliary/All_Dependencies/. $HOME/Arduino/libraries/
-  - git clone https://github.com/OPEnSLab-OSU/Loom.git $HOME/Arduino/libraries/Loom
-  - ln -s $PWD $HOME/Arduino/libraries/.
+    - stage: "Communication Platforms"
+      script:
+        - arduino-cli compile --fqbn $BOARD $PWD/examples/'Communication Platforms'/LoRa/Receive
+        - arduino-cli compile --fqbn $BOARD $PWD/examples/'Communication Platforms'/LoRa/Receive_Blocking
+        - arduino-cli compile --fqbn $BOARD $PWD/examples/'Communication Platforms'/LoRa/Transmit
+        - arduino-cli compile --fqbn $BOARD $PWD/examples/'Communication Platforms'/nRF/Receive
+        - arduino-cli compile --fqbn $BOARD $PWD/examples/'Communication Platforms'/nRF/Transmit
 
-script:
-  #Compiling all lab examples
-  - arduino-cli compile --fqbn $BOARD $PWD/examples/Basic
-  - arduino-cli compile --fqbn $BOARD $PWD/examples/Actuators/Relay
-  - arduino-cli compile --fqbn $BOARD $PWD/examples/'Communication Platforms'/LoRa/Receive
-  - arduino-cli compile --fqbn $BOARD $PWD/examples/'Communication Platforms'/LoRa/Receive_Blocking
-  - arduino-cli compile --fqbn $BOARD $PWD/examples/'Communication Platforms'/LoRa/Transmit
-  - arduino-cli compile --fqbn $BOARD $PWD/examples/'Communication Platforms'/nRF/Receive
-  - arduino-cli compile --fqbn $BOARD $PWD/examples/'Communication Platforms'/nRF/Transmit
-  - arduino-cli compile --fqbn $BOARD $PWD/examples/Configuration/ConfigOverSerial
-  - arduino-cli compile --fqbn $BOARD $PWD/examples/Configuration/Default_Parameters
-  - arduino-cli compile --fqbn $BOARD $PWD/examples/Configuration/JsonConfig
-  - arduino-cli compile --fqbn $BOARD $PWD/examples/Configuration/LoadConfigSD
-  - arduino-cli compile --fqbn $BOARD $PWD/examples/ExtractValueFromJson
-  - arduino-cli compile --fqbn $BOARD $PWD/examples/InternalTimers
-  - arduino-cli compile --fqbn $BOARD $PWD/examples/'Lab Examples'/AGU/Base
-  - arduino-cli compile --fqbn $BOARD $PWD/examples/'Lab Examples'/Hypnos_SD
-  - arduino-cli compile --fqbn $BOARD $PWD/examples/'Lab Examples'/Hypnos_SD_Sleep
-  - arduino-cli compile --fqbn $BOARD $PWD/examples/'Lab Examples'/Ishield
-  - arduino-cli compile --fqbn $BOARD $PWD/examples/'Lab Examples'/SmartRockLoomSimple
-  - arduino-cli compile --fqbn $BOARD $PWD/examples/'Lab Examples'/Stroud/StroudNode
-  - arduino-cli compile --fqbn $BOARD $PWD/examples/'Logging Platforms'/OLED
-  - arduino-cli compile --fqbn $BOARD $PWD/examples/'Logging Platforms'/SD
-  - arduino-cli compile --fqbn $BOARD $PWD/examples/MaxMsp/SimpleMax
-  - arduino-cli compile --fqbn $BOARD $PWD/examples/'Publishing Platforms'/GoogleSheetsEthernet
-  - arduino-cli compile --fqbn $BOARD $PWD/examples/'Publishing Platforms'/GoogleSheetsLTE
-  - arduino-cli compile --fqbn $BOARD $PWD/examples/'Publishing Platforms'/GoogleSheetsRTC
-  - arduino-cli compile --fqbn $BOARD $PWD/examples/'Publishing Platforms'/GoogleSheetsWiFi
-  - arduino-cli compile --fqbn $BOARD $PWD/examples/RTC/BasicRepeatingRTC_DS3231
-  - arduino-cli compile --fqbn $BOARD $PWD/examples/RTC/BasicRepeatingRTC_PCF8523
-  - arduino-cli compile --fqbn $BOARD $PWD/examples/Sensors/ADS1115
-  - arduino-cli compile --fqbn $BOARD $PWD/examples/Sensors/K30
-  - arduino-cli compile --fqbn $BOARD $PWD/examples/Sensors/MMA8451
-  - arduino-cli compile --fqbn $BOARD $PWD/examples/Sensors/MPU6050
-  - arduino-cli compile --fqbn $BOARD $PWD/examples/Sensors/Multiplexer
-  - arduino-cli compile --fqbn $BOARD $PWD/examples/Sleep/Sleep
-  - arduino-cli compile --fqbn $BOARD $PWD/examples/WiFiFirmwareUpdater
+    - stage: "Configuration"
+      script:
+        - arduino-cli compile --fqbn $BOARD $PWD/examples/Configuration/ConfigOverSerial
+        - arduino-cli compile --fqbn $BOARD $PWD/examples/Configuration/Default_Parameters
+        - arduino-cli compile --fqbn $BOARD $PWD/examples/Configuration/JsonConfig
+        - arduino-cli compile --fqbn $BOARD $PWD/examples/Configuration/LoadConfigSD
+
+    - stage: "Extract Value From Json"
+      script:
+        - arduino-cli compile --fqbn $BOARD $PWD/examples/ExtractValueFromJson
+
+    - stage: "Internal Timers"
+      script:
+        - arduino-cli compile --fqbn $BOARD $PWD/examples/InternalTimers
+
+    - stage: "Lab Examples"
+      script:
+        - arduino-cli compile --fqbn $BOARD $PWD/examples/'Lab Examples'/AGU/Base
+        - arduino-cli compile --fqbn $BOARD $PWD/examples/'Lab Examples'/Hypnos_SD
+        - arduino-cli compile --fqbn $BOARD $PWD/examples/'Lab Examples'/Hypnos_SD_Sleep
+        - arduino-cli compile --fqbn $BOARD $PWD/examples/'Lab Examples'/Ishield
+        - arduino-cli compile --fqbn $BOARD $PWD/examples/'Lab Examples'/SmartRockLoomSimple
+        - arduino-cli compile --fqbn $BOARD $PWD/examples/'Lab Examples'/Stroud/StroudNode
+
+    - stage: "Logging Platforms"
+      script:
+        - arduino-cli compile --fqbn $BOARD $PWD/examples/'Logging Platforms'/OLED
+        - arduino-cli compile --fqbn $BOARD $PWD/examples/'Logging Platforms'/SD
+
+    - stage: "Max"
+      script:
+        - arduino-cli compile --fqbn $BOARD $PWD/examples/MaxMsp/SimpleMax
+
+    - stage: "Publishing Platforms"
+      script:
+        - arduino-cli compile --fqbn $BOARD $PWD/examples/'Publishing Platforms'/GoogleSheetsEthernet
+        - arduino-cli compile --fqbn $BOARD $PWD/examples/'Publishing Platforms'/GoogleSheetsLTE
+        - arduino-cli compile --fqbn $BOARD $PWD/examples/'Publishing Platforms'/GoogleSheetsRTC
+        - arduino-cli compile --fqbn $BOARD $PWD/examples/'Publishing Platforms'/GoogleSheetsWiFi
+
+    - stage: "RTC"
+      script:
+        - arduino-cli compile --fqbn $BOARD $PWD/examples/RTC/BasicRepeatingRTC_DS3231
+        - arduino-cli compile --fqbn $BOARD $PWD/examples/RTC/BasicRepeatingRTC_PCF8523
+
+    - stage: "Sensors"
+      script:
+        - arduino-cli compile --fqbn $BOARD $PWD/examples/Sensors/ADS1115
+        - arduino-cli compile --fqbn $BOARD $PWD/examples/Sensors/K30
+        - arduino-cli compile --fqbn $BOARD $PWD/examples/Sensors/MMA8451
+        - arduino-cli compile --fqbn $BOARD $PWD/examples/Sensors/MPU6050
+        - arduino-cli compile --fqbn $BOARD $PWD/examples/Sensors/Multiplexer
+
+    - stage: "Sleep"
+      script:
+        - arduino-cli compile --fqbn $BOARD $PWD/examples/Sleep/Sleep
+
+    - stage: "Wifi Firmware Update"
+      script:
+        - arduino-cli compile --fqbn $BOARD $PWD/examples/WiFiFirmwareUpdater
+
+    - stage: "Basic"
+      script:
+        - arduino-cli compile --warnings all --fqbn $BOARD $PWD/examples/Basic
