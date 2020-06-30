@@ -23,7 +23,7 @@ addons:
       - doxygen
 
 install:
-  - curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh 0.10.0 | BINDIR=/usr/bin sudo sh
+  - curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | BINDIR=/usr/bin sudo sh  0.10.0
   - arduino-cli core update-index --additional-urls $ADDITIONAL_URLS
   - arduino-cli core install arduino:samd -v
   - arduino-cli core install $CORE -v --additional-urls $ADDITIONAL_URLS
