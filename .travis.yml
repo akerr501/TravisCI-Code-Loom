@@ -27,7 +27,7 @@ install:
   - arduino-cli core update-index --additional-urls $ADDITIONAL_URLS
   - arduino-cli core install arduino:samd -v
   - arduino-cli core install $CORE -v --additional-urls $ADDITIONAL_URLS
-  - ln -s $PWD /home/travis/.arduino15/packages/loom/hardware/1.0.0/libraries/.
+  - ln -s $PWD /home/travis/.arduino15/packages/adafruit/hardware/samd/1.5.14/libraries/.
 
 
 jobs:
