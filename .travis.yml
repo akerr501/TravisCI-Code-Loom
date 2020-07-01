@@ -3,7 +3,7 @@
 language: c
 env:
   global:
-    - ADDITIONAL_URLS="https://github.com/OPEnSLab-OSU/Loom_Auxiliary/raw/master/package_loom_index.json,https://adafruit.github.io/arduino-board-index/package_adafruit_index.json"
+    - ADDITIONAL_URLS="https://github.com/OPEnSLab-OSU/Loom_Auxiliary/raw/master/package_loom_index.json"
     - DOXYFILE=$TRAVIS_BUILD_DIR/.travis/Doxyfile
     - CORE="adafruit:samd" BOARD="adafruit:samd:adafruit_feather_m0"
 
