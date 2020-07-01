@@ -3,8 +3,7 @@
 language: c
 env:
   global:
-    - ADDITIONAL_URLS="https://github.com/OPEnSLab-OSU/Loom_Auxiliary/raw/master/package_loom_index.json,https://adafruit.github.io/arduino-board-index/package_adafruit_index.json"
-    - DOXYFILE=$TRAVIS_BUILD_DIR/.travis/Doxyfile
+    - ADDITIONAL_URLS="https://adafruit.github.io/arduino-board-index/package_adafruit_index.json,https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json,https://github.com/stm32duino/BoardManagerFiles/raw/master/STM32/package_stm_index.json"
     - CORE="adafruit:samd" BOARD="adafruit:samd:adafruit_feather_m0"
 
 cache:
@@ -27,8 +26,10 @@ install:
   - arduino-cli core update-index --additional-urls $ADDITIONAL_URLS
   - arduino-cli core install arduino:samd -v
   - arduino-cli core install $CORE -v --additional-urls $ADDITIONAL_URLS
-  - ln -s $PWD /home/travis/.arduino15/packages/adafruit/hardware/samd/1.5.14/libraries/.
-
+  - mkdir -p $HOME/Arduino/libraries
+  - git clone https://github.com/OPEnSLab-OSU/Loom_Auxiliary.git
+  - cp -a ./Loom_Auxiliary/Arduino_Profile/samd/libraries/. $HOME/Arduino/libraries/
+  - ln -s $PWD $HOME/Arduino/libraries/.
 
 jobs:
   include:
