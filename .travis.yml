@@ -4,7 +4,7 @@ language: c
 env:
   global:
     - ADDITIONAL_URLS="https://adafruit.github.io/arduino-board-index/package_adafruit_index.json,https://github.com/OPEnSLab-OSU/Loom_Auxiliary/raw/RefactorV3/package_loom_index.json"
-    - CORE="adafruit:samd" BOARD="adafruit:samd:adafruit_feather_m0"
+    - CORE="adafruit:samd" BOARD="loom:samd:loom"
 
 cache:
     directories:
