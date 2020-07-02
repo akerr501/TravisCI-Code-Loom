@@ -26,7 +26,7 @@ install:
   - arduino-cli core update-index --additional-urls $ADDITIONAL_URLS
   - arduino-cli core install arduino:samd -v
   - arduino-cli core install $CORE -v --additional-urls $ADDITIONAL_URLS
-  - arduino-cli core install loom:samd -v --additional-urls https://github.com/OPEnSLab-OSU/Loom_Auxiliary/raw/RefactorV3/package_loom_index.json
+  - arduino-cli core install loom:samd -v --additional-urls https://github.com/OPEnSLab-OSU/Loom_Auxiliary/raw/master/package_loom_index.json
 
 jobs:
   include:
