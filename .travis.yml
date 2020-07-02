@@ -3,7 +3,7 @@
 language: c
 env:
   global:
-    - ADDITIONAL_URLS="https://adafruit.github.io/arduino-board-index/package_adafruit_index.json"
+    - ADDITIONAL_URLS="https://adafruit.github.io/arduino-board-index/package_adafruit_index.json,https://github.com/OPEnSLab-OSU/Loom_Auxiliary/raw/master/package_loom_index.json"
     - CORE="adafruit:samd" BOARD="loom:samd:loom"
 
 cache:
@@ -25,7 +25,7 @@ install:
   - curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | BINDIR=/usr/bin sudo sh
   - arduino-cli core update-index --additional-urls $ADDITIONAL_URLS
   - arduino-cli core install arduino:samd -v
-  - arduino-cli core install $CORE -v --additional-urls $ADDITIONAL_URLS
+  - arduino-cli core install $CORE -v --additional-urls https://adafruit.github.io/arduino-board-index/package_adafruit_index.json
   - arduino-cli core install loom:samd -v --additional-urls https://github.com/OPEnSLab-OSU/Loom_Auxiliary/raw/master/package_loom_index.json
 
 jobs:
